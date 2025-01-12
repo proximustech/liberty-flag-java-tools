@@ -5,11 +5,15 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Properties;
 
+/**
+* Creates and exposes the liberty Client according with the resource configuration
+*/
 public class FlagTool {
 
 
-    public final static HashMap<String, String> defaultFlagsValues = new HashMap<String, String>();
+    public final static HashMap<String, Integer> defaultFlagsValues = new HashMap<String, Integer>();
     public static String flagsControllerEndpoint = "";
+    public static String flagsControllerAccessToken = "";
     public static String flagsContextKey = "";
     public static Integer flagsCacheSecondsTimeout = null;
     public static LibertyClient client = null;
@@ -25,7 +29,7 @@ public class FlagTool {
         try {
             flagValuesProperties.load(inputFlags);
             flagValuesProperties.forEach((key, value) -> {
-                defaultFlagsValues.put(key.toString(), value.toString());
+                defaultFlagsValues.put(key.toString(), Integer.parseInt(value.toString()));
             });       
             
             
@@ -33,6 +37,8 @@ public class FlagTool {
             flagsControllerProperties.forEach((key, value) -> {
                 if (key.equals("flags_controller.endpoint")) {
                     flagsControllerEndpoint = value.toString(); 
+                }else if(key.equals("flags_controller.access_token")) {
+                    flagsControllerAccessToken = value.toString();
                 }else if(key.equals("flags_controller.context_key")) {
                     flagsContextKey = value.toString();
                 }else if(key.equals("flags_controller.cache_seconds_timeout")) {
@@ -40,7 +46,7 @@ public class FlagTool {
                 }
             });
             
-            client = new LibertyClient(flagsControllerEndpoint, flagsContextKey, flagsCacheSecondsTimeout, defaultFlagsValues);
+            client = new LibertyClient(flagsControllerEndpoint,flagsControllerAccessToken, flagsContextKey, flagsCacheSecondsTimeout, defaultFlagsValues);
             
         } catch (IOException e) {
             e.printStackTrace();

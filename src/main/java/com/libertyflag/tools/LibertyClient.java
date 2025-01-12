@@ -14,67 +14,121 @@ import org.json.simple.JSONArray;
 import org.json.simple.parser.ParseException;
 import org.json.simple.parser.JSONParser;
 
+
+/**
+* Connects to the Liberty Flag Server and provides sdk tools for serving flag values through the FlagTool Class
+*/
 public class LibertyClient {
 
+    private static HashMap<String,Integer> defaultFlagsValues = new HashMap<String,Integer>();
     private static HashMap<String,String> flagsValuesCache = new HashMap<String,String>();
     private static String endpointUrl = new String();
     private static String contextKey = new String();
+    private static String accessToken = new String();
     private static Integer cacheTimeStamp = 0;
     private static Integer cacheSecondsTimeout = 0;
     
-    
-    public LibertyClient(String endpointUrl, String contextKey, Integer cacheSecondsTimeout, HashMap<String,String> defaultFlagsValues) {
+    public LibertyClient(String endpointUrl, String accessToken, String contextKey,Integer cacheSecondsTimeout, HashMap<String,Integer> defaultFlagsValues) {
         
         this.endpointUrl = endpointUrl;
         this.cacheSecondsTimeout = cacheSecondsTimeout;
         this.contextKey = contextKey;
+        this.accessToken = accessToken;
+        this.defaultFlagsValues = defaultFlagsValues;
         
         if (this.flagsValuesCache.size() == 0) {
-            this.flagsValuesCache = defaultFlagsValues;
             this.updateCache();
-            
         }
         
 
     }
 
-    
-    public String getFlagValue(String flagName) {
+    /**
+    * Returns unprocessed cached flag Value. Must be used with flags of type "text"
+    * TODO: Implement text flag type on the server
+    */
+    public String getStringFlagValue(String flagName) {
         this.updateCache();
         return flagsValuesCache.get(flagName);
         
     }
+
+    /**
+    * Returns booleanFlag value for the "boolean" engine only
+    */
+    public Boolean booleanFlagIsTrue(String flagName) {
+      HashMap<String, String> data = new HashMap<String, String>();
+      return booleanFlagIsTrue(flagName,data);
+    }
     
-    public Boolean flagIsEnabled(String flagName) {
+    /**
+    * Returns booleanFlag value for engines that may require additional data
+    */    
+    public Boolean booleanFlagIsTrue(String flagName,HashMap<String, String> data) {
         this.updateCache();
-        String flagValue=this.flagsValuesCache.get(flagName);
-        if (flagValue.strip().equals("1")) {
-            return true;
+
+        Boolean resultValue = false;
+        if(defaultFlagsValues.get(flagName).equals(1)){
+          resultValue = true;
+        }        
+
+        try {
+          String flagConfigurationString=this.flagsValuesCache.get(flagName);
+
+          JSONParser jsonParser = new JSONParser();
+          JSONObject flagConfiguration = (JSONObject)jsonParser.parse(flagConfigurationString);
+          String engine = flagConfiguration.get("engine").toString();
+          JSONObject engineParameters = (JSONObject)flagConfiguration.get("parameters");
+          if(engine.equals("boolean")){
+            resultValue = EngineBoolean.getValue(engineParameters);
+          }
+          else if(engine.equals("boolean_conditioned_true")){
+            resultValue = EngineBooleanConditionedTrue.getValue(engineParameters,data);
+          }
+          else if(engine.equals("boolean_conditioned_false")){
+            resultValue = EngineBooleanConditionedFalse.getValue(engineParameters,data);
+          }
+          else if(engine.equals("boolean_conditionedor_true")){
+            resultValue = EngineBooleanConditionedOrTrue.getValue(engineParameters,data);
+          }
+          else if(engine.equals("boolean_conditionedor_false")){
+            resultValue = EngineBooleanConditionedOrFalse.getValue(engineParameters,data);
+          }                                        
+        } catch (Exception e) {
+            System.out.println("Error. Flag ("+flagName+"): "+e.getMessage());            
         }
-        else return false;
+
+        return resultValue;
         
     }
     
+    /**
+    * Updates de flag value local cache if the timeout expired
+    */
     private void updateCache() {
         synchronized (this) {
+
             Long currentTimeStamp = System.currentTimeMillis()/1000;
             if ((currentTimeStamp - this.cacheTimeStamp) > this.cacheSecondsTimeout) {
+              
                 this.cacheTimeStamp = currentTimeStamp.intValue();
                 try {
                     JSONObject jsonBody = new JSONObject();
                     jsonBody.put("context-key", this.contextKey);
-                    String httpResult = this.executePost(this.endpointUrl+"/values", jsonBody.toJSONString());
+                    jsonBody.put("access-token", this.accessToken);
+                    String httpResult = this.executePost(this.endpointUrl+"/get_context_flags_data", jsonBody.toJSONString());
                     JSONParser jsonParser = new JSONParser();
-                    JSONArray flagsList = (JSONArray)jsonParser.parse(httpResult);
+                    JSONObject apiResponse = (JSONObject)jsonParser.parse(httpResult);
+                    JSONArray flagsList = (JSONArray)apiResponse.get("flags");
                     Iterator<JSONObject> flagsListIterator = flagsList.iterator();
                     
                     while (flagsListIterator.hasNext()) {
                         JSONObject flagValuePair = flagsListIterator.next();
                         String flagName = (String) flagValuePair.get("name");
-                        String flagValue = (String) flagValuePair.get("value");
-                        
-                        if (this.flagsValuesCache.containsKey(flagName)) {
-                            this.flagsValuesCache.put(flagName, flagValue);
+                        String flagConfiguration = flagValuePair.get("configuration").toString();
+
+                        if (this.defaultFlagsValues.containsKey(flagName)) {
+                            this.flagsValuesCache.put(flagName, flagConfiguration);
                             
                         }
                         
@@ -82,7 +136,7 @@ public class LibertyClient {
                     
                     
                 } catch (Exception e) {
-                    // TODO: handle exception
+                    System.out.println(e.getMessage());
                 }
                 
             }
@@ -93,6 +147,8 @@ public class LibertyClient {
     
     private String executePost(String targetURL, String urlParameters) {
         HttpURLConnection connection = null;
+
+        //TODO: Send client identification
 
         try {
           //Create connection
