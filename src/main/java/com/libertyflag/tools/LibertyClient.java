@@ -14,13 +14,12 @@ import org.json.simple.JSONArray;
 import org.json.simple.parser.ParseException;
 import org.json.simple.parser.JSONParser;
 
-
 /**
-* Connects to the Liberty Flag Server and provides sdk tools for serving flag values through the FlagTool Class
+* Connects to the Liberty Flag Server and provides tools for serving flag values through the FlagTool Class
 */
 public class LibertyClient {
 
-    private static HashMap<String,Integer> defaultFlagsValues = new HashMap<String,Integer>();
+    private static HashMap<String,String> defaultFlagsValues = new HashMap<String,String>();
     private static HashMap<String,String> flagsValuesCache = new HashMap<String,String>();
     private static String endpointUrl = new String();
     private static String contextKey = new String();
@@ -28,7 +27,7 @@ public class LibertyClient {
     private static Integer cacheTimeStamp = 0;
     private static Integer cacheSecondsTimeout = 0;
     
-    public LibertyClient(String endpointUrl, String accessToken, String contextKey,Integer cacheSecondsTimeout, HashMap<String,Integer> defaultFlagsValues) {
+    public LibertyClient(String endpointUrl, String accessToken, String contextKey,Integer cacheSecondsTimeout, HashMap<String,String> defaultFlagsValues) {
         
         this.endpointUrl = endpointUrl;
         this.cacheSecondsTimeout = cacheSecondsTimeout;
@@ -40,16 +39,32 @@ public class LibertyClient {
             this.updateCache();
         }
         
-
     }
 
     /**
-    * Returns unprocessed cached flag Value. Must be used with flags of type "text"
-    * TODO: Implement text flag type on the server
+    * Returns string flag Value. Must be used with flags of type "string"
     */
     public String getStringFlagValue(String flagName) {
         this.updateCache();
-        return flagsValuesCache.get(flagName);
+
+        String resultValue = defaultFlagsValues.get(flagName);
+
+        try {
+          String flagConfigurationString=this.flagsValuesCache.get(flagName);
+
+          JSONParser jsonParser = new JSONParser();
+          JSONObject flagConfiguration = (JSONObject)jsonParser.parse(flagConfigurationString);
+          String engine = flagConfiguration.get("engine").toString();
+          JSONObject engineParameters = (JSONObject)flagConfiguration.get("parameters");
+          if(engine.equals("string")){
+            resultValue = EngineString.getValue(engineParameters);
+          }
+
+        } catch (Exception e) {
+            System.out.println("Error. Flag ("+flagName+"): "+e.getMessage());
+        }
+
+        return resultValue;
         
     }
 
@@ -68,7 +83,7 @@ public class LibertyClient {
         this.updateCache();
 
         Boolean resultValue = false;
-        if(defaultFlagsValues.get(flagName).equals(1)){
+        if(defaultFlagsValues.get(flagName).equals("1")){
           resultValue = true;
         }        
 

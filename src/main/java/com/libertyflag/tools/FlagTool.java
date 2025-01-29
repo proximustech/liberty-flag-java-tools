@@ -11,7 +11,7 @@ import java.util.Properties;
 public class FlagTool {
 
 
-    public final static HashMap<String, Integer> defaultFlagsValues = new HashMap<String, Integer>();
+    public final static HashMap<String, String> defaultFlagsValues = new HashMap<String, String>();
     public static String flagsControllerEndpoint = "";
     public static String flagsControllerAccessToken = "";
     public static String flagsContextKey = "";
@@ -29,7 +29,7 @@ public class FlagTool {
         try {
             flagValuesProperties.load(inputFlags);
             flagValuesProperties.forEach((key, value) -> {
-                defaultFlagsValues.put(key.toString(), Integer.parseInt(value.toString()));
+                defaultFlagsValues.put(key.toString(),value.toString());
             });       
             
             
