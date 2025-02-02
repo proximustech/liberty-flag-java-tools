@@ -131,7 +131,7 @@ public class LibertyClient {
                     JSONObject jsonBody = new JSONObject();
                     jsonBody.put("context-key", this.contextKey);
                     jsonBody.put("access-token", this.accessToken);
-                    String httpResult = this.executePost(this.endpointUrl+"/flags-config", jsonBody.toJSONString());
+                    String httpResult = this.executePost(this.endpointUrl+"/get-flags-config", jsonBody.toJSONString());
                     JSONParser jsonParser = new JSONParser();
                     JSONObject apiResponse = (JSONObject)jsonParser.parse(httpResult);
                     JSONArray flagsList = (JSONArray)apiResponse.get("flags");
