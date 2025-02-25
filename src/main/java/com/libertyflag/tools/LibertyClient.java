@@ -132,7 +132,7 @@ public class LibertyClient {
                 try {
                     
                     JSONObject jsonDataPulse = new JSONObject();
-                    jsonDataPulse.put("client-id", this.clientId);
+                    jsonDataPulse.put("client_id", this.clientId);
 
                     JSONObject jsonBody = new JSONObject();
                     jsonBody.put("context-key", this.contextKey);
