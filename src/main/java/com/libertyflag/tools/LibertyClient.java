@@ -28,7 +28,7 @@ public class LibertyClient {
     private static Integer cacheTimeStamp = 0;
     private static Integer cacheSecondsTimeout = 0;
 
-    private HashMap<String,String> data = new HashMap<String,String>();
+    private static HashMap<String,String> data = new HashMap<String,String>();
     
     public LibertyClient(String clientId,String endpointUrl, String accessToken, String contextKey,Integer cacheSecondsTimeout, HashMap<String,String> defaultFlagsValues) {
         
@@ -141,6 +141,8 @@ public class LibertyClient {
                   jsonDataPulseDataMap.put(key, this.data.get(key));
               }
               jsonDataPulse.put("data_map", jsonDataPulseDataMap);
+              
+              this.data = new HashMap<String,String>();
 
               JSONObject jsonBody = new JSONObject();
               jsonBody.put("context-key", this.contextKey);
