@@ -49,7 +49,14 @@ public class FlagTool {
                 }
             });
             
-            client = new LibertyClient(flagsClientId,flagsControllerEndpoint,flagsControllerAccessToken, flagsContextKey, flagsCacheSecondsTimeout, defaultFlagsValues);
+            client = new LibertyClient(
+            		flagsClientId,
+            		flagsControllerEndpoint,
+            		flagsControllerAccessToken, 
+            		flagsContextKey, 
+            		flagsCacheSecondsTimeout, 
+            		defaultFlagsValues
+            );
             
         } catch (IOException e) {
             e.printStackTrace();

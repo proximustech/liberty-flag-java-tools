@@ -3,6 +3,7 @@ package com.libertyflag.tools;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.net.HttpURLConnection;
+import java.net.ConnectException;
 import java.net.URL;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,16 +20,16 @@ import org.json.simple.parser.JSONParser;
 */
 public class LibertyClient {
 
-    private static HashMap<String,String> defaultFlagsValues = new HashMap<String,String>();
-    private static HashMap<String,String> flagsValuesCache = new HashMap<String,String>();
-    private static String clientId = new String();
-    private static String endpointUrl = new String();
-    private static String contextKey = new String();
-    private static String accessToken = new String();
-    private static Integer cacheTimeStamp = 0;
-    private static Integer cacheSecondsTimeout = 0;
+    private HashMap<String,String> defaultFlagsValues = new HashMap<String,String>();
+    private HashMap<String,String> flagsValuesCache = new HashMap<String,String>();
+    private String clientId = new String();
+    private String endpointUrl = new String();
+    private String contextKey = new String();
+    private String accessToken = new String();
+    private Integer cacheTimeStamp = 0;
+    private Integer cacheSecondsTimeout = 0;
 
-    private static HashMap<String,String> data = new HashMap<String,String>();
+    private HashMap<String,String> data = new HashMap<String,String>();
     
     public LibertyClient(String clientId,String endpointUrl, String accessToken, String contextKey,Integer cacheSecondsTimeout, HashMap<String,String> defaultFlagsValues) {
         
@@ -64,6 +65,8 @@ public class LibertyClient {
             resultValue = EngineString.getValue(engineParameters);
           }
 
+        } catch (ParseException e) {
+            System.out.println("Error Parsing Flag ("+flagName+") Configuration: "+e.getMessage());
         } catch (Exception e) {
             System.out.println("Error. Flag ("+flagName+"): "+e.getMessage());
         }
@@ -114,6 +117,8 @@ public class LibertyClient {
           else if(engine.equals("boolean_conditionedor_false")){
             resultValue = EngineBooleanConditionedOrFalse.getValue(engineParameters,data);
           }                                        
+        } catch (ParseException e) {
+            System.out.println("Error Parsing Flag ("+flagName+") Configuration: "+e.getMessage());
         } catch (Exception e) {
             System.out.println("Error. Flag ("+flagName+"): "+e.getMessage());            
         }
@@ -123,9 +128,10 @@ public class LibertyClient {
     }
     
     /**
-    * Updates de flag value local cache if the timeout expired
+    * Updates the flag value local cache if the timeout is expired
     */
-    private synchronized void updateCache() {
+    @SuppressWarnings({ "unchecked" })
+	private synchronized void updateCache() {
 
       Long currentTimeStamp = System.currentTimeMillis()/1000;
       if ((currentTimeStamp - this.cacheTimeStamp) > this.cacheSecondsTimeout) {
@@ -167,6 +173,8 @@ public class LibertyClient {
               }
               
               
+          } catch (ParseException e) {
+              System.out.println("Error Parsing HTTP result: "+e.getMessage());
           } catch (Exception e) {
               System.out.println(e.getMessage());
           }
@@ -206,6 +214,9 @@ public class LibertyClient {
           }
           rd.close();
           return response.toString();
+        } catch (ConnectException e) {
+            System.out.println("Error in HTTP connection to "+targetURL+") Detaill: "+e.getMessage());
+            return null;
         } catch (Exception e) {
           e.printStackTrace();
           return null;
