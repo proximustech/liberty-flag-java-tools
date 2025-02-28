@@ -27,6 +27,8 @@ public class LibertyClient {
     private static String accessToken = new String();
     private static Integer cacheTimeStamp = 0;
     private static Integer cacheSecondsTimeout = 0;
+
+    private HashMap<String,String> data = new HashMap<String,String>();
     
     public LibertyClient(String clientId,String endpointUrl, String accessToken, String contextKey,Integer cacheSecondsTimeout, HashMap<String,String> defaultFlagsValues) {
         
@@ -82,6 +84,7 @@ public class LibertyClient {
     * Returns booleanFlag value for engines that may require additional data
     */    
     public Boolean booleanFlagIsTrue(String flagName,HashMap<String, String> data) {
+        this.data = data;
         this.updateCache();
 
         Boolean resultValue = false;
@@ -122,55 +125,56 @@ public class LibertyClient {
     /**
     * Updates de flag value local cache if the timeout expired
     */
-    private void updateCache() {
-        synchronized (this) {
+    private synchronized void updateCache() {
 
-            Long currentTimeStamp = System.currentTimeMillis()/1000;
-            if ((currentTimeStamp - this.cacheTimeStamp) > this.cacheSecondsTimeout) {
+      Long currentTimeStamp = System.currentTimeMillis()/1000;
+      if ((currentTimeStamp - this.cacheTimeStamp) > this.cacheSecondsTimeout) {
+        
+          this.cacheTimeStamp = currentTimeStamp.intValue();
+          try {
               
-                this.cacheTimeStamp = currentTimeStamp.intValue();
-                try {
-                    
-                    JSONObject jsonDataPulse = new JSONObject();
-                    jsonDataPulse.put("client_id", this.clientId);
+              JSONObject jsonDataPulse = new JSONObject();
+              jsonDataPulse.put("client_id", this.clientId);
 
-                    JSONObject jsonBody = new JSONObject();
-                    jsonBody.put("context-key", this.contextKey);
-                    jsonBody.put("access-token", this.accessToken);
-                    jsonBody.put("data-pulse", jsonDataPulse);
-                    String httpResult = this.executePost(this.endpointUrl+"/get-flags-config", jsonBody.toJSONString());
-                    JSONParser jsonParser = new JSONParser();
-                    JSONObject apiResponse = (JSONObject)jsonParser.parse(httpResult);
-                    JSONArray flagsList = (JSONArray)apiResponse.get("flags");
-                    Iterator<JSONObject> flagsListIterator = flagsList.iterator();
-                    
-                    while (flagsListIterator.hasNext()) {
-                        JSONObject flagValuePair = flagsListIterator.next();
-                        String flagName = (String) flagValuePair.get("name");
-                        String flagConfiguration = flagValuePair.get("configuration").toString();
+              JSONObject jsonDataPulseDataMap = new JSONObject();
+              for ( String key : this.data.keySet() ) {
+                  jsonDataPulseDataMap.put(key, this.data.get(key));
+              }
+              jsonDataPulse.put("data_map", jsonDataPulseDataMap);
 
-                        if (this.defaultFlagsValues.containsKey(flagName)) {
-                            this.flagsValuesCache.put(flagName, flagConfiguration);
-                            
-                        }
-                        
-                    }
-                    
-                    
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                }
-                
-            }
+              JSONObject jsonBody = new JSONObject();
+              jsonBody.put("context-key", this.contextKey);
+              jsonBody.put("access-token", this.accessToken);
+              jsonBody.put("data-pulse", jsonDataPulse);
+              String httpResult = this.executePost(this.endpointUrl+"/get-flags-config", jsonBody.toJSONString());
+              JSONParser jsonParser = new JSONParser();
+              JSONObject apiResponse = (JSONObject)jsonParser.parse(httpResult);
+              JSONArray flagsList = (JSONArray)apiResponse.get("flags");
+              Iterator<JSONObject> flagsListIterator = flagsList.iterator();
+              
+              while (flagsListIterator.hasNext()) {
+                  JSONObject flagValuePair = flagsListIterator.next();
+                  String flagName = (String) flagValuePair.get("name");
+                  String flagConfiguration = flagValuePair.get("configuration").toString();
 
-        } 
+                  if (this.defaultFlagsValues.containsKey(flagName)) {
+                      this.flagsValuesCache.put(flagName, flagConfiguration);
+                      
+                  }
+                  
+              }
+              
+              
+          } catch (Exception e) {
+              System.out.println(e.getMessage());
+          }
+          
+      }
         
     }
     
     private String executePost(String targetURL, String urlParameters) {
         HttpURLConnection connection = null;
-
-        //TODO: Send client identification
 
         try {
           //Create connection
