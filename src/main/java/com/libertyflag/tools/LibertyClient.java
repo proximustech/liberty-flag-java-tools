@@ -76,6 +76,35 @@ public class LibertyClient {
     }
 
     /**
+    * Returns string flag Value. Must be used with flags of type "numeric"
+    */
+    public Integer getIntegerFlagValue(String flagName) {
+        this.updateCache();
+
+        Integer resultValue = Integer.parseInt(defaultFlagsValues.get(flagName));
+
+        try {
+          String flagConfigurationString=this.flagsValuesCache.get(flagName);
+
+          JSONParser jsonParser = new JSONParser();
+          JSONObject flagConfiguration = (JSONObject)jsonParser.parse(flagConfigurationString);
+          String engine = flagConfiguration.get("engine").toString();
+          JSONObject engineParameters = (JSONObject)flagConfiguration.get("parameters");
+          if(engine.equals("numeric")){
+            resultValue = EngineNumeric.getValue(engineParameters);
+          }
+
+        } catch (ParseException e) {
+            System.out.println("Error Parsing Flag ("+flagName+") Configuration: "+e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error. Flag ("+flagName+"): "+e.getMessage());
+        }
+
+        return resultValue;
+        
+    }    
+
+    /**
     * Returns booleanFlag value for the "boolean" engine only
     */
     public Boolean booleanFlagIsTrue(String flagName) {
