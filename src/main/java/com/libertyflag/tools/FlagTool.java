@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 /**
-* Creates and exposes the liberty Client according with the resource configuration
+* Creates and exposes the liberty Client according with the application.properties in the resources directory.
 */
 public class FlagTool {
 
@@ -17,6 +17,7 @@ public class FlagTool {
     private static String flagsContextKey = "";
     private static String flagsClientId= "";
     private static Integer flagsCacheSecondsTimeout = null;
+    private static boolean verboseErrorLog = true;
     public static LibertyClient client = null;
     
     static Properties flagValuesProperties = new Properties();
@@ -46,7 +47,9 @@ public class FlagTool {
                     flagsClientId = value.toString();
                 }else if(key.equals("flags_controller.cache_seconds_timeout")) {
                     flagsCacheSecondsTimeout = Integer.parseInt(value.toString());
-                }
+                }else if(key.equals("flags_controller.verbose_error_log")) {
+                    verboseErrorLog = Boolean.parseBoolean(value.toString());
+                }                
             });
             
             client = new LibertyClient(
@@ -54,13 +57,14 @@ public class FlagTool {
             		flagsControllerEndpoint,
             		flagsControllerAccessToken, 
             		flagsContextKey, 
-            		flagsCacheSecondsTimeout, 
+            		flagsCacheSecondsTimeout,
+                    verboseErrorLog,
             		defaultFlagsValues
             );
             
         } catch (IOException e) {
+            System.out.println("Error - Flag Tool - Creating Flag Tool Client: "+e.getMessage());
             e.printStackTrace();
         }
     }
-
 }
