@@ -28,16 +28,18 @@ public class LibertyClient {
     private String accessToken = new String();
     private Integer cacheTimeStamp = 0;
     private Integer cacheSecondsTimeout = 0;
+    private boolean verboseErrorLog = false;
 
     private HashMap<String,String> data = new HashMap<String,String>();
     
-    public LibertyClient(String clientId,String endpointUrl, String accessToken, String contextKey,Integer cacheSecondsTimeout, HashMap<String,String> defaultFlagsValues) {
+    public LibertyClient(String clientId,String endpointUrl, String accessToken, String contextKey,Integer cacheSecondsTimeout, boolean verboseErrorLog, HashMap<String,String> defaultFlagsValues) {
         
         this.clientId = clientId;
         this.endpointUrl = endpointUrl;
         this.cacheSecondsTimeout = cacheSecondsTimeout;
         this.contextKey = contextKey;
         this.accessToken = accessToken;
+        this.verboseErrorLog = verboseErrorLog;
         this.defaultFlagsValues = defaultFlagsValues;
         
         if (this.flagsValuesCache.size() == 0) {
@@ -66,9 +68,15 @@ public class LibertyClient {
           }
 
         } catch (ParseException e) {
-            System.out.println("Error Parsing Flag ("+flagName+") Configuration: "+e.getMessage());
+          System.out.println("Error - Flag Tool - getStringFlagValue() Configuration ParseException with Flag ("+flagName+"): "+e.getMessage());
+          if(this.verboseErrorLog){
+            e.printStackTrace();
+          }           
         } catch (Exception e) {
-            System.out.println("Error. Flag ("+flagName+"): "+e.getMessage());
+          System.out.println("Error - Flag Tool - getStringFlagValue() with Flag ("+flagName+"): "+e.getMessage());
+          if(this.verboseErrorLog){
+            e.printStackTrace();
+          }           
         }
 
         return resultValue;
@@ -95,9 +103,15 @@ public class LibertyClient {
           }
 
         } catch (ParseException e) {
-            System.out.println("Error Parsing Flag ("+flagName+") Configuration: "+e.getMessage());
+          System.out.println("Error - Flag Tool - getIntegerFlagValue() Configuration ParseException with Flag ("+flagName+"): "+e.getMessage());
+          if(this.verboseErrorLog){
+            e.printStackTrace();
+          }           
         } catch (Exception e) {
-            System.out.println("Error. Flag ("+flagName+"): "+e.getMessage());
+          System.out.println("Error - Flag Tool - getIntegerFlagValue() with Flag ("+flagName+"): "+e.getMessage());
+          if(this.verboseErrorLog){
+            e.printStackTrace();
+          }           
         }
 
         return resultValue;
@@ -147,24 +161,28 @@ public class LibertyClient {
             resultValue = EngineBooleanConditionedOrFalse.getValue(engineParameters,data);
           }                                        
         } catch (ParseException e) {
-            System.out.println("Error Parsing Flag ("+flagName+") Configuration: "+e.getMessage());
+          System.out.println("Error - Flag Tool - booleanFlagIsTrue() Configuration ParseException with Flag ("+flagName+"): "+e.getMessage());
+          if(this.verboseErrorLog){
+            e.printStackTrace();
+          }             
         } catch (Exception e) {
-            System.out.println("Error. Flag ("+flagName+"): "+e.getMessage());            
+          System.out.println("Error - Flag Tool - booleanFlagIsTrue() with Flag ("+flagName+"): "+e.getMessage());
+          if(this.verboseErrorLog){
+            e.printStackTrace();
+          }           
         }
 
-        return resultValue;
-        
+        return resultValue;    
     }
     
     /**
     * Updates the flag value local cache if the timeout is expired
     */
     @SuppressWarnings({ "unchecked" })
-	private synchronized void updateCache() {
+	  private synchronized void updateCache() {
 
       Long currentTimeStamp = System.currentTimeMillis()/1000;
-      if ((currentTimeStamp - this.cacheTimeStamp) > this.cacheSecondsTimeout) {
-        
+      if ((currentTimeStamp - this.cacheTimeStamp) > this.cacheSecondsTimeout) {  
           this.cacheTimeStamp = currentTimeStamp.intValue();
           try {
               
@@ -201,11 +219,16 @@ public class LibertyClient {
                   
               }
               
-              
           } catch (ParseException e) {
-              System.out.println("Error Parsing HTTP result: "+e.getMessage());
+            System.out.println("Error - Flag Tool - updateCache() ParseException: "+e.getMessage());
+            if(this.verboseErrorLog){
+              e.printStackTrace();
+            }            
           } catch (Exception e) {
-              System.out.println(e.getMessage());
+            System.out.println("Error - Flag Tool - updateCache(): "+e.getMessage());
+            if(this.verboseErrorLog){
+              e.printStackTrace();
+            }
           }
           
       }
@@ -244,16 +267,21 @@ public class LibertyClient {
           rd.close();
           return response.toString();
         } catch (ConnectException e) {
-            System.out.println("Error in HTTP connection to "+targetURL+") Detaill: "+e.getMessage());
-            return null;
+          System.out.println("Error - Flag Tool - executePost() ConnectException to "+targetURL+"): "+e.getMessage());
+          if(this.verboseErrorLog){
+            e.printStackTrace();
+          }          
+          return null;
         } catch (Exception e) {
-          e.printStackTrace();
+          System.out.println("Error - Flag Tool - executePost() to "+targetURL+"): "+e.getMessage());       
+          if(this.verboseErrorLog){
+            e.printStackTrace();
+          }
           return null;
         } finally {
           if (connection != null) {
             connection.disconnect();
           }
         }
-    }    
-    
+    }
 }
