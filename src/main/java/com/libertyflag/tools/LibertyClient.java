@@ -51,12 +51,14 @@ public class LibertyClient {
     /**
     * Returns string flag Value. Must be used with flags of type "string"
     */
-    public String getStringFlagValue(String flagName) throws NotNullDefaultFlagValueException {
+    public String getStringFlagValue(String flagName, String dafaultValueBackup) {
         this.updateCache();
 
         String resultValue = defaultFlagsValues.get(flagName);
         if(resultValue==null){
-            throw new NotNullDefaultFlagValueException("Flag '"+flagName+"' NOT found in  the default values list.");
+          System.out.println("Error - Flag Tool Configuration - Flag ("+flagName+"): Default Value NOT set. Registering default value from backup.");
+          defaultFlagsValues.put(flagName,dafaultValueBackup);
+          resultValue = dafaultValueBackup;
         }        
 
         try {
@@ -89,19 +91,23 @@ public class LibertyClient {
     /**
     * Returns string flag Value. Must be used with flags of type "numeric"
     */
-    public Integer getIntegerFlagValue(String flagName) throws MatchDefaultFlagValueTypeException,NotNullDefaultFlagValueException {
+    public Integer getIntegerFlagValue(String flagName, Integer dafaultValueBackup) {
         this.updateCache();
 
         String defaultValue = defaultFlagsValues.get(flagName);
         if(defaultValue==null){
-            throw new NotNullDefaultFlagValueException("Flag '"+flagName+"' NOT found in  the default values list.");
+          System.out.println("Error - Flag Tool Configuration - Flag ("+flagName+"): Default Value NOT set. Registering default value from backup.");
+          defaultFlagsValues.put(flagName,dafaultValueBackup.toString());
+          defaultValue = dafaultValueBackup.toString();
         }  
 
-        Integer resultValue = 0;
+        Integer resultValue = null;
         try {
           resultValue = Integer.parseInt(defaultValue);
         } catch (NumberFormatException e) {
-          throw new MatchDefaultFlagValueTypeException("Using getIntegerFlagValue('"+flagName+"') to read a none Integer default flag value.");
+          System.out.println("Error - Flag Tool Usage - Using getIntegerFlagValue('"+flagName+"') to read a none Integer default flag value. Registering default value from backup.");
+          defaultFlagsValues.put(flagName,dafaultValueBackup.toString());
+          resultValue = dafaultValueBackup;
         }
 
         try {
@@ -134,21 +140,23 @@ public class LibertyClient {
     /**
     * Returns booleanFlag value for the "boolean" engine only
     */
-    public Boolean booleanFlagIsTrue(String flagName) throws MatchDefaultFlagValueTypeException,NotNullDefaultFlagValueException {
+    public Boolean booleanFlagIsTrue(String flagName,Integer dafaultValueBackup) {
       HashMap<String, String> data = new HashMap<String, String>();
-      return booleanFlagIsTrue(flagName,data);
+      return booleanFlagIsTrue(flagName,dafaultValueBackup,data);
     }
     
     /**
     * Returns booleanFlag value for engines that may require additional data
     */    
-    public Boolean booleanFlagIsTrue(String flagName,HashMap<String, String> data) throws MatchDefaultFlagValueTypeException,NotNullDefaultFlagValueException {
+    public Boolean booleanFlagIsTrue(String flagName,Integer dafaultValueBackup,HashMap<String, String> data) {
         this.data = data;
         this.updateCache();
 
         String defaultValue = defaultFlagsValues.get(flagName);
         if(defaultValue==null){
-            throw new NotNullDefaultFlagValueException("Flag '"+flagName+"' NOT found in  the default values list.");
+          System.out.println("Error - Flag Tool Configuration - Flag ("+flagName+"): Default Value NOT set. Registering default value from backup.");
+          defaultFlagsValues.put(flagName,dafaultValueBackup.toString());
+          defaultValue = dafaultValueBackup.toString();
         }  
 
         Boolean resultValue = false;
@@ -156,7 +164,11 @@ public class LibertyClient {
           resultValue = true;
         }
         else if(!defaultValue.equals("0")){
-          throw new MatchDefaultFlagValueTypeException("Using booleanFlagIsTrue('"+flagName+"') to read a none 1 or 0 default flag value.");
+          System.out.println("Error - Flag Tool Usage - Using booleanFlagIsTrue('"+flagName+"') to read a none 1 or 0 default flag value. Registering default value from backup.");
+          defaultFlagsValues.put(flagName,dafaultValueBackup.toString());
+          if(dafaultValueBackup.equals(1)){
+            resultValue = true;
+          }
         }        
 
         try {
