@@ -10,15 +10,16 @@ import java.util.Properties;
 */
 public class FlagTool {
 
-
-    public final static HashMap<String, String> defaultFlagsValues = new HashMap<String, String>();
     private static String flagsControllerEndpoint = "";
     private static String flagsControllerAccessToken = "";
     private static String flagsContextKey = "";
     private static String flagsClientId= "";
-    private static Integer flagsCacheSecondsTimeout = null;
+
+    private static Integer flagsCacheSecondsTimeout = 60;
     private static boolean verboseErrorLog = true;
     private static boolean sendDataPulse = false;
+
+    public final static HashMap<String, String> defaultFlagsValues = new HashMap<String, String>();
     public static LibertyClient client = null;
     
     static Properties flagValuesProperties = new Properties();
