@@ -51,10 +51,13 @@ public class LibertyClient {
     /**
     * Returns string flag Value. Must be used with flags of type "string"
     */
-    public String getStringFlagValue(String flagName) {
+    public String getStringFlagValue(String flagName) throws NotNullDefaultFlagValueException {
         this.updateCache();
 
         String resultValue = defaultFlagsValues.get(flagName);
+        if(resultValue==null){
+            throw new NotNullDefaultFlagValueException("Flag '"+flagName+"' NOT found in  the default values list.");
+        }        
 
         try {
           String flagConfigurationString=this.flagsValuesCache.get(flagName);
@@ -86,10 +89,20 @@ public class LibertyClient {
     /**
     * Returns string flag Value. Must be used with flags of type "numeric"
     */
-    public Integer getIntegerFlagValue(String flagName) {
+    public Integer getIntegerFlagValue(String flagName) throws MatchDefaultFlagValueTypeException,NotNullDefaultFlagValueException {
         this.updateCache();
 
-        Integer resultValue = Integer.parseInt(defaultFlagsValues.get(flagName));
+        String defaultValue = defaultFlagsValues.get(flagName);
+        if(defaultValue==null){
+            throw new NotNullDefaultFlagValueException("Flag '"+flagName+"' NOT found in  the default values list.");
+        }  
+
+        Integer resultValue = 0;
+        try {
+          resultValue = Integer.parseInt(defaultValue);
+        } catch (NumberFormatException e) {
+          throw new MatchDefaultFlagValueTypeException("Using getIntegerFlagValue('"+flagName+"') to read a none Integer default flag value.");
+        }
 
         try {
           String flagConfigurationString=this.flagsValuesCache.get(flagName);
@@ -121,7 +134,7 @@ public class LibertyClient {
     /**
     * Returns booleanFlag value for the "boolean" engine only
     */
-    public Boolean booleanFlagIsTrue(String flagName) {
+    public Boolean booleanFlagIsTrue(String flagName) throws MatchDefaultFlagValueTypeException,NotNullDefaultFlagValueException {
       HashMap<String, String> data = new HashMap<String, String>();
       return booleanFlagIsTrue(flagName,data);
     }
@@ -129,13 +142,21 @@ public class LibertyClient {
     /**
     * Returns booleanFlag value for engines that may require additional data
     */    
-    public Boolean booleanFlagIsTrue(String flagName,HashMap<String, String> data) {
+    public Boolean booleanFlagIsTrue(String flagName,HashMap<String, String> data) throws MatchDefaultFlagValueTypeException,NotNullDefaultFlagValueException {
         this.data = data;
         this.updateCache();
 
+        String defaultValue = defaultFlagsValues.get(flagName);
+        if(defaultValue==null){
+            throw new NotNullDefaultFlagValueException("Flag '"+flagName+"' NOT found in  the default values list.");
+        }  
+
         Boolean resultValue = false;
-        if(defaultFlagsValues.get(flagName).equals("1")){
+        if(defaultValue.equals("1")){
           resultValue = true;
+        }
+        else if(!defaultValue.equals("0")){
+          throw new MatchDefaultFlagValueTypeException("Using booleanFlagIsTrue('"+flagName+"') to read a none 1 or 0 default flag value.");
         }        
 
         try {
@@ -183,56 +204,54 @@ public class LibertyClient {
 
       Long currentTimeStamp = System.currentTimeMillis()/1000;
       if ((currentTimeStamp - this.cacheTimeStamp) > this.cacheSecondsTimeout) {  
-          this.cacheTimeStamp = currentTimeStamp.intValue();
-          try {
-              
-              JSONObject jsonDataPulse = new JSONObject();
-              jsonDataPulse.put("client_id", this.clientId);
+        this.cacheTimeStamp = currentTimeStamp.intValue();
+        try {
+            
+          JSONObject jsonDataPulse = new JSONObject();
+          jsonDataPulse.put("client_id", this.clientId);
 
-              JSONObject jsonDataPulseDataMap = new JSONObject();
-              for ( String key : this.data.keySet() ) {
-                  jsonDataPulseDataMap.put(key, this.data.get(key));
-              }
-              jsonDataPulse.put("data_map", jsonDataPulseDataMap);
-              
-              this.data = new HashMap<String,String>();
+          JSONObject jsonDataPulseDataMap = new JSONObject();
+          for ( String key : this.data.keySet() ) {
+              jsonDataPulseDataMap.put(key, this.data.get(key));
+          }
+          jsonDataPulse.put("data_map", jsonDataPulseDataMap);
+          
+          this.data = new HashMap<String,String>();
 
-              JSONObject jsonBody = new JSONObject();
-              jsonBody.put("context-key", this.contextKey);
-              jsonBody.put("access-token", this.accessToken);
-              jsonBody.put("data-pulse", jsonDataPulse);
-              String httpResult = this.executePost(this.endpointUrl+"/get-flags-config", jsonBody.toJSONString());
-              JSONParser jsonParser = new JSONParser();
-              JSONObject apiResponse = (JSONObject)jsonParser.parse(httpResult);
-              JSONArray flagsList = (JSONArray)apiResponse.get("flags");
-              Iterator<JSONObject> flagsListIterator = flagsList.iterator();
-              
-              while (flagsListIterator.hasNext()) {
-                  JSONObject flagValuePair = flagsListIterator.next();
-                  String flagName = (String) flagValuePair.get("name");
-                  String flagConfiguration = flagValuePair.get("configuration").toString();
+          JSONObject jsonBody = new JSONObject();
+          jsonBody.put("context-key", this.contextKey);
+          jsonBody.put("access-token", this.accessToken);
+          jsonBody.put("data-pulse", jsonDataPulse);
+          String httpResult = this.executePost(this.endpointUrl+"/get-flags-config", jsonBody.toJSONString());
+          JSONParser jsonParser = new JSONParser();
+          JSONObject apiResponse = (JSONObject)jsonParser.parse(httpResult);
+          JSONArray flagsList = (JSONArray)apiResponse.get("flags");
+          Iterator<JSONObject> flagsListIterator = flagsList.iterator();
+          
+          while (flagsListIterator.hasNext()) {
+              JSONObject flagValuePair = flagsListIterator.next();
+              String flagName = (String) flagValuePair.get("name");
+              String flagConfiguration = flagValuePair.get("configuration").toString();
 
-                  if (this.defaultFlagsValues.containsKey(flagName)) {
-                      this.flagsValuesCache.put(flagName, flagConfiguration);
-                      
-                  }
+              if (this.defaultFlagsValues.containsKey(flagName)) {
+                  this.flagsValuesCache.put(flagName, flagConfiguration);
                   
               }
               
-          } catch (ParseException e) {
-            System.out.println("Error - Flag Tool - updateCache() ParseException: "+e.getMessage());
-            if(this.verboseErrorLog){
-              e.printStackTrace();
-            }            
-          } catch (Exception e) {
-            System.out.println("Error - Flag Tool - updateCache(): "+e.getMessage());
-            if(this.verboseErrorLog){
-              e.printStackTrace();
-            }
           }
-          
-      }
-        
+            
+        } catch (ParseException e) {
+          System.out.println("Error - Flag Tool - updateCache() ParseException: "+e.getMessage());
+          if(this.verboseErrorLog){
+            e.printStackTrace();
+          }            
+        } catch (Exception e) {
+          System.out.println("Warning - Flag Tool - updateCache(): "+e.getMessage());
+          if(this.verboseErrorLog){
+            e.printStackTrace();
+          }
+        }
+      } 
     }
     
     private String executePost(String targetURL, String urlParameters) {
@@ -267,13 +286,13 @@ public class LibertyClient {
           rd.close();
           return response.toString();
         } catch (ConnectException e) {
-          System.out.println("Error - Flag Tool - executePost() ConnectException to "+targetURL+"): "+e.getMessage());
+          System.out.println("Warning - Flag Tool - executePost() ConnectException to "+targetURL+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }          
           return null;
         } catch (Exception e) {
-          System.out.println("Error - Flag Tool - executePost() to "+targetURL+"): "+e.getMessage());       
+          System.out.println("Warning - Flag Tool - executePost() to "+targetURL+"): "+e.getMessage());       
           if(this.verboseErrorLog){
             e.printStackTrace();
           }
