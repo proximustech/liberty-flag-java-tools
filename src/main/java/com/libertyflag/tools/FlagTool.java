@@ -18,6 +18,7 @@ public class FlagTool {
     private static String flagsClientId= "";
     private static Integer flagsCacheSecondsTimeout = null;
     private static boolean verboseErrorLog = true;
+    private static boolean sendDataPulse = false;
     public static LibertyClient client = null;
     
     static Properties flagValuesProperties = new Properties();
@@ -34,7 +35,6 @@ public class FlagTool {
                 defaultFlagsValues.put(key.toString(),value.toString());
             });       
             
-            
             flagsControllerProperties.load(inputProperties);
             flagsControllerProperties.forEach((key, value) -> {
                 if (key.equals("flags_controller.endpoint")) {
@@ -49,7 +49,9 @@ public class FlagTool {
                     flagsCacheSecondsTimeout = Integer.parseInt(value.toString());
                 }else if(key.equals("flags_controller.verbose_error_log")) {
                     verboseErrorLog = Boolean.parseBoolean(value.toString());
-                }                
+                }else if(key.equals("flags_controller.send_data_pulse")) {
+                    sendDataPulse = Boolean.parseBoolean(value.toString());
+                }                 
             });
             
             client = new LibertyClient(
@@ -59,6 +61,7 @@ public class FlagTool {
             		flagsContextKey, 
             		flagsCacheSecondsTimeout,
                     verboseErrorLog,
+                    sendDataPulse,
             		defaultFlagsValues
             );
             

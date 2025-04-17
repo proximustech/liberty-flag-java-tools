@@ -29,10 +29,11 @@ public class LibertyClient {
     private Integer cacheTimeStamp = 0;
     private Integer cacheSecondsTimeout = 0;
     private boolean verboseErrorLog = false;
+    private boolean sendDataPulse = false;
 
     private HashMap<String,String> data = new HashMap<String,String>();
     
-    public LibertyClient(String clientId,String endpointUrl, String accessToken, String contextKey,Integer cacheSecondsTimeout, boolean verboseErrorLog, HashMap<String,String> defaultFlagsValues) {
+    public LibertyClient(String clientId,String endpointUrl, String accessToken, String contextKey,Integer cacheSecondsTimeout, boolean verboseErrorLog, boolean sendDataPulse, HashMap<String,String> defaultFlagsValues) {
         
         this.clientId = clientId;
         this.endpointUrl = endpointUrl;
@@ -40,6 +41,7 @@ public class LibertyClient {
         this.contextKey = contextKey;
         this.accessToken = accessToken;
         this.verboseErrorLog = verboseErrorLog;
+        this.sendDataPulse = sendDataPulse;
         this.defaultFlagsValues = defaultFlagsValues;
         
         if (this.flagsValuesCache.size() == 0) {
@@ -233,7 +235,10 @@ public class LibertyClient {
           JSONObject jsonBody = new JSONObject();
           jsonBody.put("context-key", this.contextKey);
           jsonBody.put("access-token", this.accessToken);
-          jsonBody.put("data-pulse", jsonDataPulse);
+          if(this.sendDataPulse){
+            jsonBody.put("data-pulse", jsonDataPulse);
+          }
+          
           String httpResult = this.executePost(this.endpointUrl+"/get-flags-config", jsonBody.toJSONString());
           JSONParser jsonParser = new JSONParser();
           JSONObject apiResponse = (JSONObject)jsonParser.parse(httpResult);
