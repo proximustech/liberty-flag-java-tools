@@ -20,6 +20,7 @@ import org.json.simple.parser.JSONParser;
 */
 public class LibertyClient {
 
+    private LoggerTool logger;
     private HashMap<String,String> defaultFlagsValues = new HashMap<String,String>();
     private HashMap<String,String> flagsValuesCache = new HashMap<String,String>();
     private String clientId = new String();
@@ -33,8 +34,10 @@ public class LibertyClient {
 
     private HashMap<String,String> data = new HashMap<String,String>();
     
-    public LibertyClient(String clientId,String endpointUrl, String accessToken, String contextKey,Integer cacheSecondsTimeout, boolean verboseErrorLog, boolean sendDataPulse, HashMap<String,String> defaultFlagsValues) {
+    public LibertyClient(LoggerTool logger,String clientId,String endpointUrl, String accessToken, String contextKey,Integer cacheSecondsTimeout, boolean verboseErrorLog, boolean sendDataPulse, HashMap<String,String> defaultFlagsValues) {
         
+        this.logger = logger;
+
         this.clientId = clientId;
         this.endpointUrl = endpointUrl;
         this.cacheSecondsTimeout = cacheSecondsTimeout;
@@ -58,7 +61,7 @@ public class LibertyClient {
 
         String resultValue = defaultFlagsValues.get(flagName);
         if(resultValue==null){
-          System.out.println("Error - Flag Tool Configuration - Flag ("+flagName+"): Default Value NOT set. Registering default value from backup.");
+          logger.error("Configuration - Flag ("+flagName+"): Default Value NOT set. Registering default value from backup.");
           defaultFlagsValues.put(flagName,dafaultValueBackup);
           resultValue = dafaultValueBackup;
         }        
@@ -75,12 +78,12 @@ public class LibertyClient {
           }
 
         } catch (ParseException e) {
-          System.out.println("Error - Flag Tool - getStringFlagValue() Configuration ParseException with Flag ("+flagName+"): "+e.getMessage());
+          logger.error("getStringFlagValue() Configuration ParseException with Flag ("+flagName+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }           
         } catch (Exception e) {
-          System.out.println("Error - Flag Tool - getStringFlagValue() with Flag ("+flagName+"): "+e.getMessage());
+          logger.error("getStringFlagValue() with Flag ("+flagName+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }           
@@ -98,7 +101,7 @@ public class LibertyClient {
 
         String defaultValue = defaultFlagsValues.get(flagName);
         if(defaultValue==null){
-          System.out.println("Error - Flag Tool Configuration - Flag ("+flagName+"): Default Value NOT set. Registering default value from backup.");
+          logger.error("Configuration - Flag ("+flagName+"): Default Value NOT set. Registering default value from backup.");
           defaultFlagsValues.put(flagName,dafaultValueBackup.toString());
           defaultValue = dafaultValueBackup.toString();
         }  
@@ -107,7 +110,7 @@ public class LibertyClient {
         try {
           resultValue = Integer.parseInt(defaultValue);
         } catch (NumberFormatException e) {
-          System.out.println("Error - Flag Tool Usage - Using getIntegerFlagValue('"+flagName+"') to read a none Integer default flag value. Registering default value from backup.");
+          logger.error("Usage - Using getIntegerFlagValue('"+flagName+"') to read a none Integer default flag value. Registering default value from backup.");
           defaultFlagsValues.put(flagName,dafaultValueBackup.toString());
           resultValue = dafaultValueBackup;
         }
@@ -124,12 +127,12 @@ public class LibertyClient {
           }
 
         } catch (ParseException e) {
-          System.out.println("Error - Flag Tool - getIntegerFlagValue() Configuration ParseException with Flag ("+flagName+"): "+e.getMessage());
+          logger.error("getIntegerFlagValue() Configuration ParseException with Flag ("+flagName+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }           
         } catch (Exception e) {
-          System.out.println("Error - Flag Tool - getIntegerFlagValue() with Flag ("+flagName+"): "+e.getMessage());
+          logger.error("getIntegerFlagValue() with Flag ("+flagName+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }           
@@ -156,7 +159,7 @@ public class LibertyClient {
 
         String defaultValue = defaultFlagsValues.get(flagName);
         if(defaultValue==null){
-          System.out.println("Error - Flag Tool Configuration - Flag ("+flagName+"): Default Value NOT set. Registering default value from backup.");
+          logger.error("Configuration - Flag ("+flagName+"): Default Value NOT set. Registering default value from backup.");
           defaultFlagsValues.put(flagName,dafaultValueBackup.toString());
           defaultValue = dafaultValueBackup.toString();
         }  
@@ -166,7 +169,7 @@ public class LibertyClient {
           resultValue = true;
         }
         else if(!defaultValue.equals("0")){
-          System.out.println("Error - Flag Tool Usage - Using booleanFlagIsTrue('"+flagName+"') to read a none 1 or 0 default flag value. Registering default value from backup.");
+          logger.error("Usage - Using booleanFlagIsTrue('"+flagName+"') to read a none 1 or 0 default flag value. Registering default value from backup.");
           defaultFlagsValues.put(flagName,dafaultValueBackup.toString());
           if(dafaultValueBackup.equals(1)){
             resultValue = true;
@@ -196,12 +199,12 @@ public class LibertyClient {
             resultValue = EngineBooleanConditionedOrFalse.getValue(engineParameters,data);
           }                                        
         } catch (ParseException e) {
-          System.out.println("Error - Flag Tool - booleanFlagIsTrue() Configuration ParseException with Flag ("+flagName+"): "+e.getMessage());
+          logger.error("booleanFlagIsTrue() Configuration ParseException with Flag ("+flagName+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }             
         } catch (Exception e) {
-          System.out.println("Error - Flag Tool - booleanFlagIsTrue() with Flag ("+flagName+"): "+e.getMessage());
+          logger.error("booleanFlagIsTrue() with Flag ("+flagName+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }           
@@ -258,12 +261,12 @@ public class LibertyClient {
           }
             
         } catch (ParseException e) {
-          System.out.println("Error - Flag Tool - updateCache() ParseException: "+e.getMessage());
+          logger.error("updateCache() ParseException: "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }            
         } catch (Exception e) {
-          System.out.println("Warning - Flag Tool - updateCache(): "+e.getMessage());
+          logger.warn("updateCache(): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }
@@ -303,13 +306,13 @@ public class LibertyClient {
           rd.close();
           return response.toString();
         } catch (ConnectException e) {
-          System.out.println("Warning - Flag Tool - executePost() ConnectException to "+targetURL+"): "+e.getMessage());
+          logger.warn("executePost() ConnectException to "+targetURL+": "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }          
           return null;
         } catch (Exception e) {
-          System.out.println("Warning - Flag Tool - executePost() to "+targetURL+"): "+e.getMessage());       
+          logger.warn("executePost() to "+targetURL+"): "+e.getMessage());       
           if(this.verboseErrorLog){
             e.printStackTrace();
           }

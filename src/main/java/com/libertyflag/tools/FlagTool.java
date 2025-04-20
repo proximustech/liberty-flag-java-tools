@@ -26,6 +26,8 @@ public class FlagTool {
     static Properties flagsControllerProperties = new Properties();
     static {
 
+        LoggerTool logger = new LoggerTool();
+
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         InputStream inputFlags = classLoader.getResourceAsStream("application.flags");
         InputStream inputProperties = classLoader.getResourceAsStream("application.properties");
@@ -56,6 +58,7 @@ public class FlagTool {
             });
             
             client = new LibertyClient(
+                    logger,
             		flagsClientId,
             		flagsControllerEndpoint,
             		flagsControllerAccessToken, 
@@ -67,7 +70,7 @@ public class FlagTool {
             );
             
         } catch (IOException e) {
-            System.out.println("Error - Flag Tool - Creating Flag Tool Client: "+e.getMessage());
+            logger.error("Creating Flag Tool Client: "+e.getMessage());
             e.printStackTrace();
         }
     }
