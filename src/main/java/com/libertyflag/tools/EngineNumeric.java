@@ -10,8 +10,6 @@ public class EngineNumeric {
     * @param  parameters Flag configuration parameters
     * @return Value of the flag  as Integer
 	*/
-    
-	*/
     public static Integer getValue(JSONObject parameters){
         return Integer.parseInt(parameters.get("value").toString().strip());
     }
