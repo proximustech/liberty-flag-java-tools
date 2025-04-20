@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 /**
-* Creates and exposes the liberty Client according with the application.properties in the resources directory.
+* Creates and exposes the Liberty Flag Client according with the application.properties in the resources directory.
 */
 public class FlagTool {
 

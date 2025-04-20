@@ -5,7 +5,12 @@ import org.json.simple.JSONObject;
 public class EngineNumeric {
 
 	/**
-	* Reads the value parameter and returns it as Integer.
+	* Access the value parameter.
+    *
+    * @param  parameters Flag configuration parameters
+    * @return Value of the flag  as Integer
+	*/
+    
 	*/
     public static Integer getValue(JSONObject parameters){
         return Integer.parseInt(parameters.get("value").toString().strip());

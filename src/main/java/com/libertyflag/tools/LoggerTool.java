@@ -15,10 +15,20 @@ public class LoggerTool {
         //logger.addHandler(new ConsoleHandler()); 
     }
 
+    /**
+    * Sends an error message to the log Handlers(Console is Default)
+    *
+    * @param message the message to be logged
+    */
     public void error(String message){
         logger.log(Level.SEVERE, message);
     }
 
+    /**
+    * Sends a warning message to the log Handlers(Console is Default)
+    *
+    * @param message the message to be logged
+    */
     public void warn(String message){
         logger.log(Level.WARNING, message);
     }    

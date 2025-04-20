@@ -10,6 +10,10 @@ public class EngineBooleanConditionedOrFalse {
 	/**
 	* Evaluates each condition against the data parameter for returning the final value
 	* Using the OR logic operator
+	*
+    * @param  parameters Flag configuration parameters
+	* @param  data Map with metadata that will be used to compute the value of the flag
+    * @return False if all the configured conditions are fulfilled
 	*/
     public static Boolean getValue(JSONObject parameters,HashMap<String, String> data){
         Boolean conditionFulfilled = false;

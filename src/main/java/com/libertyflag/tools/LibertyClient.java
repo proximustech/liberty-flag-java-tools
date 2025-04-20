@@ -55,6 +55,10 @@ public class LibertyClient {
 
     /**
     * Returns string flag Value. Must be used with flags of type "string"
+    * 
+    * @param  flagName the name of the consulted flag
+    * @param  dafaultValueBackup default value to be used if an error ocurrs when reading from the application.flags file
+    * @return Value of the flag
     */
     public String getStringFlagValue(String flagName, String dafaultValueBackup) {
         this.updateCache();
@@ -95,6 +99,10 @@ public class LibertyClient {
 
     /**
     * Returns string flag Value. Must be used with flags of type "numeric"
+    * 
+    * @param  flagName the name of the consulted flag
+    * @param  dafaultValueBackup default value to be used if an error ocurrs when reading from the application.flags file
+    * @return Value of the flag
     */
     public Integer getIntegerFlagValue(String flagName, Integer dafaultValueBackup) {
         this.updateCache();
@@ -144,6 +152,10 @@ public class LibertyClient {
 
     /**
     * Returns booleanFlag value for the "boolean" engine only
+    * 
+    * @param  flagName the name of the consulted flag
+    * @param  dafaultValueBackup default value to be used if an error ocurrs when reading from the application.flags file
+    * @return Value of the flag
     */
     public Boolean booleanFlagIsTrue(String flagName,Integer dafaultValueBackup) {
       HashMap<String, String> data = new HashMap<String, String>();
@@ -152,6 +164,11 @@ public class LibertyClient {
     
     /**
     * Returns booleanFlag value for engines that may require additional data
+    * 
+    * @param  flagName the name of the consulted flag
+    * @param  dafaultValueBackup default value to be used if an error ocurrs when reading from the application.flags file
+    * @param  data Map with metadata that will be used to compute the value of the flag
+    * @return Value of the flag
     */    
     public Boolean booleanFlagIsTrue(String flagName,Integer dafaultValueBackup,HashMap<String, String> data) {
         this.data = data;
@@ -274,53 +291,58 @@ public class LibertyClient {
       } 
     }
     
-    private String executePost(String targetURL, String urlParameters) {
-        HttpURLConnection connection = null;
+    /**
+    * Makes an http POST request
+    * 
+    * @return http response
+    */    
+    private String executePost(String targetURL, String body) {
+      HttpURLConnection connection = null;
 
-        try {
-          //Create connection
-          URL url = new URL(targetURL);
-          connection = (HttpURLConnection) url.openConnection();
-          connection.setRequestMethod("POST");
-          connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");;
+      try {
+        //Create connection
+        URL url = new URL(targetURL);
+        connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");;
 
-          connection.setRequestProperty("Content-Length",Integer.toString(urlParameters.getBytes().length));
+        connection.setRequestProperty("Content-Length",Integer.toString(body.getBytes().length));
 
-          connection.setUseCaches(false);
-          connection.setDoOutput(true);
+        connection.setUseCaches(false);
+        connection.setDoOutput(true);
 
-          //Send request
-          DataOutputStream wr = new DataOutputStream (connection.getOutputStream());
-          wr.writeBytes(urlParameters);
-          wr.close();
+        //Send request
+        DataOutputStream wr = new DataOutputStream (connection.getOutputStream());
+        wr.writeBytes(body);
+        wr.close();
 
-          //Get Response  
-          InputStream is = connection.getInputStream();
-          BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-          StringBuilder response = new StringBuilder(); // or StringBuffer if Java version 5+
-          String line;
-          while ((line = rd.readLine()) != null) {
-            response.append(line);
-            response.append('\r');
-          }
-          rd.close();
-          return response.toString();
-        } catch (ConnectException e) {
-          logger.warn("executePost() ConnectException to "+targetURL+": "+e.getMessage());
-          if(this.verboseErrorLog){
-            e.printStackTrace();
-          }          
-          return null;
-        } catch (Exception e) {
-          logger.warn("executePost() to "+targetURL+"): "+e.getMessage());       
-          if(this.verboseErrorLog){
-            e.printStackTrace();
-          }
-          return null;
-        } finally {
-          if (connection != null) {
-            connection.disconnect();
-          }
+        //Get Response  
+        InputStream is = connection.getInputStream();
+        BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+        StringBuilder response = new StringBuilder(); // or StringBuffer if Java version 5+
+        String line;
+        while ((line = rd.readLine()) != null) {
+          response.append(line);
+          response.append('\r');
         }
+        rd.close();
+        return response.toString();
+      } catch (ConnectException e) {
+        logger.warn("executePost() ConnectException to "+targetURL+": "+e.getMessage());
+        if(this.verboseErrorLog){
+          e.printStackTrace();
+        }          
+        return null;
+      } catch (Exception e) {
+        logger.warn("executePost() to "+targetURL+"): "+e.getMessage());       
+        if(this.verboseErrorLog){
+          e.printStackTrace();
+        }
+        return null;
+      } finally {
+        if (connection != null) {
+          connection.disconnect();
+        }
+      }
     }
 }

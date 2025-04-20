@@ -9,6 +9,10 @@ public class EngineBooleanConditionedTrue {
 
 	/**
 	* Evaluates each condition against the data parameter for returning the final value
+	*
+    * @param  parameters Flag configuration parameters
+	* @param  data Map with metadata that will be used to compute the value of the flag
+    * @return True if all the configured conditions are fulfilled
 	*/
     public static Boolean getValue(JSONObject parameters,HashMap<String, String> data){
         Boolean conditionFulfilled = false;
