@@ -1,4 +1,4 @@
-package com.libertyflag.tools;
+package net.proximustech.libertyflag;
 
 import java.util.HashMap;
 import java.util.Iterator;

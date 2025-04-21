@@ -1,4 +1,4 @@
-package com.libertyflag.tools;
+package net.proximustech.libertyflag;
 
 import org.json.simple.JSONObject;
 
