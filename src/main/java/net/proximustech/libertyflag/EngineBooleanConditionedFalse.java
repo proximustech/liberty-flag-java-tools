@@ -2,6 +2,8 @@ package net.proximustech.libertyflag;
 
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -58,6 +60,15 @@ public class EngineBooleanConditionedFalse {
 				}
 
 			}
+			else if(operatorParameter.equals("is_in")){
+				String[] secondParameterOptions = secondParameter.split("\\|");
+				if(Arrays.asList(secondParameterOptions).contains(data.get(firstParameter))){
+					conditionFulfilled = true;
+				} else {
+					conditionFulfilled = false;
+				}
+
+			}				
 
 			if(!conditionFulfilled){
 				break;
