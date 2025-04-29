@@ -304,7 +304,7 @@ public class LibertyClient {
         URL url = new URL(targetURL);
         connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");;
+        connection.setRequestProperty("Content-Type", "application/json");
 
         connection.setRequestProperty("Content-Length",Integer.toString(body.getBytes().length));
 
