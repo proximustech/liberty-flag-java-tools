@@ -5,10 +5,24 @@
 
   <groupId>net.proximustech.libertyflag</groupId>
   <artifactId>liberty-flag-java-tools</artifactId>
-  <version>1.0-SNAPSHOT</version>
+<!--  <version>1.0-SNAPSHOT</version>-->
+<version>1.0</version>
 
   <name>liberty-flag-java-tools</name>
+  <description>Java library to facilitate the connection with the liberty-flag http api</description>
   <url>https://github.com/proximustech/liberty-flag-java-tools</url>
+
+  <licenses>
+    <license>
+      <name>Liberty Flag License v1.0</name>
+      <url>https://github.com/proximustech/liberty-flag-java-tools/blob/main/LICENSE.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  
+  <scm>
+    <url>https://github.com/proximustech/liberty-flag-java-tools.git</url>
+  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -49,11 +63,77 @@
       <version>1.1.1</version>
     </dependency>
   </dependencies>
-
+	
+	<distributionManagement>
+	  <snapshotRepository>
+	    <name>Central Portal Snapshots</name>
+	    <id>central-portal-snapshots</id>
+	    <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+	  </snapshotRepository>
+	</distributionManagement>	
+	
   <build>
+  <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.4.0</version>
+            <executions>
+                <execution>
+                	<phase>package</phase>
+                	<id>attach-javadocs</id>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+	        <version>3.3.1</version>
+	        <configuration>
+	          <outputDirectory>./target</outputDirectory>
+	          <finalName>liberty-flag-java-tools</finalName>
+	        </configuration>
+            <executions>
+                <execution>
+                	<phase>package</phase>
+                	<id>attach-sources</id>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.5</version>
+            <executions>
+                <execution>
+                	<phase>package</phase>
+                    <id>sign-artifacts</id>
+                    <goals>
+                        <goal>sign</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>   
+  </plugins>
     <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
       <plugins>
         <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
+
+        <plugin>
+		    <groupId>org.sonatype.central</groupId>
+		    <artifactId>central-publishing-maven-plugin</artifactId>
+		    <version>0.7.0</version>
+		    <extensions>true</extensions>
+		    <configuration>
+		        <publishingServerId>central</publishingServerId>
+		    </configuration>
+        </plugin>
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.4.0</version>
@@ -81,7 +161,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.2</version>
+    	      <version>3.1.2</version>       
         </plugin>
         <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
         <plugin>
