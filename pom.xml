@@ -24,6 +24,14 @@
     <url>https://github.com/proximustech/liberty-flag-java-tools.git</url>
   </scm>
 
+  <developers>
+	  <developer>
+	  <id>ProximusTech</id>
+	  <name>ProximusTech</name>
+	  <email>mail@proximustech.net</email>
+	  </developer>
+  </developers>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>11</maven.compiler.release>
@@ -119,12 +127,7 @@
                     </goals>
                 </execution>
             </executions>
-        </plugin>   
-  </plugins>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
-      <plugins>
-        <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
-
+        </plugin>
         <plugin>
 		    <groupId>org.sonatype.central</groupId>
 		    <artifactId>central-publishing-maven-plugin</artifactId>
@@ -134,6 +137,10 @@
 		        <publishingServerId>central</publishingServerId>
 		    </configuration>
         </plugin>
+  </plugins>
+    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+      <plugins>
+        <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.4.0</version>
