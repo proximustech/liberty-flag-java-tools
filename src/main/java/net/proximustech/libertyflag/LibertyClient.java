@@ -253,8 +253,6 @@ public class LibertyClient {
           this.data = new HashMap<String,String>();
 
           JSONObject jsonBody = new JSONObject();
-          jsonBody.put("context-key", this.contextKey);
-          jsonBody.put("access-token", this.accessToken);
           if(this.sendDataPulse){
             jsonBody.put("data-pulse", jsonDataPulse);
           }
@@ -294,6 +292,8 @@ public class LibertyClient {
     /**
     * Makes an http POST request
     * 
+    * @param targetURL the endpoint URL
+    * @param body      the JSON request body
     * @return http response
     */    
     private String executePost(String targetURL, String body) {
@@ -305,6 +305,8 @@ public class LibertyClient {
         connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("X-Access-Token", this.accessToken);
+        connection.setRequestProperty("X-Context-Key", this.contextKey);
 
         connection.setRequestProperty("Content-Length",Integer.toString(body.getBytes().length));
 
