@@ -33,10 +33,16 @@ public class FlagTool {
         InputStream inputProperties = classLoader.getResourceAsStream("application.properties");
 
         try {
-            flagValuesProperties.load(inputFlags);
-            flagValuesProperties.forEach((key, value) -> {
-                defaultFlagsValues.put(key.toString(),value.toString());
-            });       
+            if (inputFlags != null) {
+                flagValuesProperties.load(inputFlags);
+                flagValuesProperties.forEach((key, value) -> {
+                    defaultFlagsValues.put(key.toString(),value.toString());
+                });
+                java.net.URL flagsUrl = classLoader.getResource("application.flags");
+                logger.info ("FlagTool Class. application.flags file FOUND at: " + flagsUrl);
+            } else {
+                logger.warn("FlagTool Class. application.flags file NOT found");
+            }
             
             flagsControllerProperties.load(inputProperties);
             flagsControllerProperties.forEach((key, value) -> {

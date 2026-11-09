@@ -31,6 +31,15 @@ public class LoggerTool {
     */
     public void warn(String message){
         logger.log(Level.WARNING, message);
-    }    
+    }
+    
+    /**
+    * Sends an INFO message to the log Handlers(Console is Default)
+    *
+    * @param message the message to be logged
+    */
+    public void info(String message){
+        logger.log(Level.INFO, message);
+    }   
 
 }
