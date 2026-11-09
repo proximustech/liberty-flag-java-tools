@@ -65,7 +65,7 @@ public class LibertyClient {
 
         String resultValue = defaultFlagsValues.get(flagName);
         if(resultValue==null){
-          logger.error("Configuration - Flag ("+flagName+"): Default Value NOT set. Registering default value from backup.");
+          logger.warn("Default Value NOT set for Flag ("+flagName+"): . Registering default value from dafaultValueBackup.");
           defaultFlagsValues.put(flagName,dafaultValueBackup);
           resultValue = dafaultValueBackup;
         }        
@@ -73,21 +73,30 @@ public class LibertyClient {
         try {
           String flagConfigurationString=this.flagsValuesCache.get(flagName);
 
-          JSONParser jsonParser = new JSONParser();
-          JSONObject flagConfiguration = (JSONObject)jsonParser.parse(flagConfigurationString);
-          String engine = flagConfiguration.get("engine").toString();
-          JSONObject engineParameters = (JSONObject)flagConfiguration.get("parameters");
-          if(engine.equals("string")){
-            resultValue = EngineString.getValue(engineParameters);
+          if (flagConfigurationString != null) {
+            JSONParser jsonParser = new JSONParser();
+            JSONObject flagConfiguration = (JSONObject)jsonParser.parse(flagConfigurationString);
+            String engine = flagConfiguration.get("engine").toString();
+            JSONObject engineParameters = (JSONObject)flagConfiguration.get("parameters");
+            if(engine.equals("string")){
+              resultValue = EngineString.getValue(engineParameters);
+            }
+            else {
+              logger.error("getStringFlagValue() Flag ("+flagName+") engine type MISMATCH");
+            }
+          }
+          else{
+            logger.warn("getStringFlagValue() Flag ("+flagName+") Remote Configuration NOT found ");
           }
 
+
         } catch (ParseException e) {
-          logger.error("getStringFlagValue() Configuration ParseException with Flag ("+flagName+"): "+e.getMessage());
+          logger.error("getStringFlagValue() ParseException for Flag ("+flagName+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }           
         } catch (Exception e) {
-          logger.error("getStringFlagValue() with Flag ("+flagName+"): "+e.getMessage());
+          logger.error("getStringFlagValue() GeneralException for Flag ("+flagName+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }           
@@ -109,7 +118,7 @@ public class LibertyClient {
 
         String defaultValue = defaultFlagsValues.get(flagName);
         if(defaultValue==null){
-          logger.error("Configuration - Flag ("+flagName+"): Default Value NOT set. Registering default value from backup.");
+          logger.warn("Default Value NOT set for Flag ("+flagName+"): Registering default value from dafaultValueBackup.");
           defaultFlagsValues.put(flagName,dafaultValueBackup.toString());
           defaultValue = dafaultValueBackup.toString();
         }  
@@ -118,7 +127,7 @@ public class LibertyClient {
         try {
           resultValue = Integer.parseInt(defaultValue);
         } catch (NumberFormatException e) {
-          logger.error("Usage - Using getIntegerFlagValue('"+flagName+"') to read a none Integer default flag value. Registering default value from backup.");
+          logger.error("Using getIntegerFlagValue('"+flagName+"') to read a none Integer default flag value. Registering default value from dafaultValueBackup.");
           defaultFlagsValues.put(flagName,dafaultValueBackup.toString());
           resultValue = dafaultValueBackup;
         }
@@ -126,21 +135,30 @@ public class LibertyClient {
         try {
           String flagConfigurationString=this.flagsValuesCache.get(flagName);
 
-          JSONParser jsonParser = new JSONParser();
-          JSONObject flagConfiguration = (JSONObject)jsonParser.parse(flagConfigurationString);
-          String engine = flagConfiguration.get("engine").toString();
-          JSONObject engineParameters = (JSONObject)flagConfiguration.get("parameters");
-          if(engine.equals("numeric")){
-            resultValue = EngineNumeric.getValue(engineParameters);
+          if (flagConfigurationString != null) {
+            JSONParser jsonParser = new JSONParser();
+            JSONObject flagConfiguration = (JSONObject)jsonParser.parse(flagConfigurationString);
+            String engine = flagConfiguration.get("engine").toString();
+            JSONObject engineParameters = (JSONObject)flagConfiguration.get("parameters");
+            if(engine.equals("numeric")){
+              resultValue = EngineNumeric.getValue(engineParameters);
+            }
+            else {
+              logger.error("getIntegerFlagValue() Flag ("+flagName+") engine type MISMATCH");
+            }
+          }
+          else{
+            logger.warn("getIntegerFlagValue() Flag ("+flagName+") Remote Configuration NOT found ");
           }
 
+
         } catch (ParseException e) {
-          logger.error("getIntegerFlagValue() Configuration ParseException with Flag ("+flagName+"): "+e.getMessage());
+          logger.error("getIntegerFlagValue() ParseException with Flag ("+flagName+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }           
         } catch (Exception e) {
-          logger.error("getIntegerFlagValue() with Flag ("+flagName+"): "+e.getMessage());
+          logger.error("getIntegerFlagValue() GeneralException with Flag ("+flagName+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }           
@@ -168,7 +186,7 @@ public class LibertyClient {
     * @param  flagName the name of the consulted flag
     * @param  dafaultValueBackup default value to be used if an error ocurrs when reading from the application.flags file
     * @param  data Map with metadata that will be used to compute the value of the flag
-    * @return Value of the flag
+    * @return Value of the flag which is initially false
     */    
     public Boolean booleanFlagIsTrue(String flagName,Integer dafaultValueBackup,HashMap<String, String> data) {
         this.data = data;
@@ -176,7 +194,7 @@ public class LibertyClient {
 
         String defaultValue = defaultFlagsValues.get(flagName);
         if(defaultValue==null){
-          logger.error("Configuration - Flag ("+flagName+"): Default Value NOT set. Registering default value from backup.");
+          logger.warn("Default Value NOT set for Flag ("+flagName+"): Registering default value from dafaultValueBackup.");
           defaultFlagsValues.put(flagName,dafaultValueBackup.toString());
           defaultValue = dafaultValueBackup.toString();
         }  
@@ -186,7 +204,7 @@ public class LibertyClient {
           resultValue = true;
         }
         else if(!defaultValue.equals("0")){
-          logger.error("Usage - Using booleanFlagIsTrue('"+flagName+"') to read a none 1 or 0 default flag value. Registering default value from backup.");
+          logger.error("Using booleanFlagIsTrue('"+flagName+"') to read a none 1 or 0 default flag value. Registering default value from dafaultValueBackup.");
           defaultFlagsValues.put(flagName,dafaultValueBackup.toString());
           if(dafaultValueBackup.equals(1)){
             resultValue = true;
@@ -196,32 +214,41 @@ public class LibertyClient {
         try {
           String flagConfigurationString=this.flagsValuesCache.get(flagName);
 
-          JSONParser jsonParser = new JSONParser();
-          JSONObject flagConfiguration = (JSONObject)jsonParser.parse(flagConfigurationString);
-          String engine = flagConfiguration.get("engine").toString();
-          JSONObject engineParameters = (JSONObject)flagConfiguration.get("parameters");
-          if(engine.equals("boolean")){
-            resultValue = EngineBoolean.getValue(engineParameters);
+          if (flagConfigurationString != null) {
+            JSONParser jsonParser = new JSONParser();
+            JSONObject flagConfiguration = (JSONObject)jsonParser.parse(flagConfigurationString);
+            String engine = flagConfiguration.get("engine").toString();
+            JSONObject engineParameters = (JSONObject)flagConfiguration.get("parameters");
+            if(engine.equals("boolean")){
+              resultValue = EngineBoolean.getValue(engineParameters);
+            }
+            else if(engine.equals("boolean_conditioned_true")){
+              resultValue = EngineBooleanConditionedTrue.getValue(engineParameters,data);
+            }
+            else if(engine.equals("boolean_conditioned_false")){
+              resultValue = EngineBooleanConditionedFalse.getValue(engineParameters,data);
+            }
+            else if(engine.equals("boolean_conditionedor_true")){
+              resultValue = EngineBooleanConditionedOrTrue.getValue(engineParameters,data);
+            }
+            else if(engine.equals("boolean_conditionedor_false")){
+              resultValue = EngineBooleanConditionedOrFalse.getValue(engineParameters,data);
+            }
+            else {
+              logger.error("booleanFlagIsTrue() Flag ("+flagName+") engine type MISMATCH");
+            }                                      
           }
-          else if(engine.equals("boolean_conditioned_true")){
-            resultValue = EngineBooleanConditionedTrue.getValue(engineParameters,data);
+          else{
+            logger.warn("booleanFlagIsTrue() Flag ("+flagName+") Remote Configuration NOT found ");
           }
-          else if(engine.equals("boolean_conditioned_false")){
-            resultValue = EngineBooleanConditionedFalse.getValue(engineParameters,data);
-          }
-          else if(engine.equals("boolean_conditionedor_true")){
-            resultValue = EngineBooleanConditionedOrTrue.getValue(engineParameters,data);
-          }
-          else if(engine.equals("boolean_conditionedor_false")){
-            resultValue = EngineBooleanConditionedOrFalse.getValue(engineParameters,data);
-          }                                        
+
         } catch (ParseException e) {
-          logger.error("booleanFlagIsTrue() Configuration ParseException with Flag ("+flagName+"): "+e.getMessage());
+          logger.error("booleanFlagIsTrue() ParseException with Flag ("+flagName+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }             
         } catch (Exception e) {
-          logger.error("booleanFlagIsTrue() with Flag ("+flagName+"): "+e.getMessage());
+          logger.error("booleanFlagIsTrue() GeneralException with Flag ("+flagName+"): "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }           
@@ -258,21 +285,24 @@ public class LibertyClient {
           }
           
           String httpResult = this.executePost(this.endpointUrl+"/get-flags-config", jsonBody.toJSONString());
-          JSONParser jsonParser = new JSONParser();
-          JSONObject apiResponse = (JSONObject)jsonParser.parse(httpResult);
-          JSONArray flagsList = (JSONArray)apiResponse.get("flags");
-          Iterator<JSONObject> flagsListIterator = flagsList.iterator();
           
-          while (flagsListIterator.hasNext()) {
-              JSONObject flagValuePair = flagsListIterator.next();
-              String flagName = (String) flagValuePair.get("name");
-              String flagConfiguration = flagValuePair.get("configuration").toString();
-
-              if (this.defaultFlagsValues.containsKey(flagName)) {
-                  this.flagsValuesCache.put(flagName, flagConfiguration);
-                  
-              }
-              
+          if (httpResult != null) {
+            JSONParser jsonParser = new JSONParser();
+            JSONObject apiResponse = (JSONObject)jsonParser.parse(httpResult);
+            JSONArray flagsList = (JSONArray)apiResponse.get("flags");
+            Iterator<JSONObject> flagsListIterator = flagsList.iterator();
+            
+            while (flagsListIterator.hasNext()) {
+                JSONObject flagValuePair = flagsListIterator.next();
+                String flagName = (String) flagValuePair.get("name");
+                String flagConfiguration = flagValuePair.get("configuration").toString();
+  
+                if (this.defaultFlagsValues.containsKey(flagName)) {
+                    this.flagsValuesCache.put(flagName, flagConfiguration);
+                    
+                }
+                
+            }
           }
             
         } catch (ParseException e) {
@@ -281,7 +311,7 @@ public class LibertyClient {
             e.printStackTrace();
           }            
         } catch (Exception e) {
-          logger.warn("updateCache(): "+e.getMessage());
+          logger.warn("updateCache(): GeneralException: "+e.getMessage());
           if(this.verboseErrorLog){
             e.printStackTrace();
           }
@@ -330,13 +360,13 @@ public class LibertyClient {
         rd.close();
         return response.toString();
       } catch (ConnectException e) {
-        logger.warn("executePost() ConnectException to "+targetURL+": "+e.getMessage());
+        logger.error("executePost() ConnectException to "+targetURL+": "+e.getMessage());
         if(this.verboseErrorLog){
           e.printStackTrace();
         }          
         return null;
       } catch (Exception e) {
-        logger.warn("executePost() to "+targetURL+"): "+e.getMessage());       
+        logger.error("executePost() GeneralException to "+targetURL+"): "+e.getMessage());       
         if(this.verboseErrorLog){
           e.printStackTrace();
         }

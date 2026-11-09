@@ -70,8 +70,11 @@ public class FlagTool {
             );
             
         } catch (IOException e) {
-            logger.error("Creating Flag Tool Client: "+e.getMessage());
+            logger.error("IOException Creating Flag Tool Client: "+e.getMessage());
             e.printStackTrace();
-        }
+        } catch (Exception e) {
+            logger.error("GeneralException Creating Flag Tool Client: "+e.getMessage());
+            e.printStackTrace();
+        }        
     }
 }
