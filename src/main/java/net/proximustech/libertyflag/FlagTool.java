@@ -116,13 +116,13 @@ public class FlagTool {
      * when neither source provides a value.
      */
     private static String getConfigValue(String propertyName, String envName) {
-        String propertyValue = flagsControllerProperties.getProperty(propertyName);
-        if (propertyValue != null && !propertyValue.trim().isEmpty()) {
-            return propertyValue;
-        }
         String envValue = System.getenv(envName);
         if (envValue != null && !envValue.trim().isEmpty()) {
             return envValue;
+        }
+        String propertyValue = flagsControllerProperties.getProperty(propertyName);
+        if (propertyValue != null && !propertyValue.trim().isEmpty()) {
+            return propertyValue;
         }
         return null;
     }
