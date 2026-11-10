@@ -79,7 +79,7 @@ public class FlagTool {
             if (configValue != null) {
                 verboseErrorLog = Boolean.parseBoolean(configValue);
             }
-            configValue = getConfigValue("flags_controller.send.data.pulse", "FLAGS_CONTROLLER_SEND_DATA_PULSE");
+            configValue = getConfigValue("flags.controller.send.data.pulse", "FLAGS_CONTROLLER_SEND_DATA_PULSE");
             if (configValue != null) {
                 sendDataPulse = Boolean.parseBoolean(configValue);
             }
