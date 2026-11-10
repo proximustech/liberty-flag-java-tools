@@ -16,7 +16,7 @@ public class FlagTool {
     private static String flagsClientId= "";
 
     private static Integer flagsCacheSecondsTimeout = 60;
-    private static boolean verboseErrorLog = true;
+    private static boolean verboseErrorLog = false;
     private static boolean sendDataPulse = false;
 
     public final static HashMap<String, String> defaultFlagsValues = new HashMap<String, String>();
@@ -44,36 +44,62 @@ public class FlagTool {
                 logger.warn("FlagTool Class. application.flags file NOT found");
             }
             
-            flagsControllerProperties.load(inputProperties);
-            flagsControllerProperties.forEach((key, value) -> {
-                if (key.equals("flags_controller.endpoint")) {
-                    flagsControllerEndpoint = value.toString(); 
-                }else if(key.equals("flags_controller.access_token")) {
-                    flagsControllerAccessToken = value.toString();
-                }else if(key.equals("flags_controller.context_key")) {
-                    flagsContextKey = value.toString();
-                }else if(key.equals("flags_controller.client_id")) {
-                    flagsClientId = value.toString();
-                }else if(key.equals("flags_controller.cache_seconds_timeout")) {
-                    flagsCacheSecondsTimeout = Integer.parseInt(value.toString());
-                }else if(key.equals("flags_controller.verbose_error_log")) {
-                    verboseErrorLog = Boolean.parseBoolean(value.toString());
-                }else if(key.equals("flags_controller.send_data_pulse")) {
-                    sendDataPulse = Boolean.parseBoolean(value.toString());
-                }                 
-            });
-            
+            if (inputProperties != null) {
+                flagsControllerProperties.load(inputProperties);
+                java.net.URL propertiesUrl = classLoader.getResource("application.properties");
+                logger.info("FlagTool Class. application.properties file FOUND at: " + propertiesUrl);
+            } else {
+                logger.warn("FlagTool Class. application.properties file NOT found");
+            }
+
+            // Environment variables take precedence over application.properties values.
+            String configValue;
+
+            configValue = getConfigValue("flags.controller.endpoint", "FLAGS_CONTROLLER_ENDPOINT");
+            if (configValue != null) {
+                flagsControllerEndpoint = configValue;
+            }
+            configValue = getConfigValue("flags.controller.access.token", "FLAGS_CONTROLLER_ACCESS_TOKEN");
+            if (configValue != null) {
+                flagsControllerAccessToken = configValue;
+            }
+            configValue = getConfigValue("flags.controller.context.key", "FLAGS_CONTROLLER_CONTEXT_KEY");
+            if (configValue != null) {
+                flagsContextKey = configValue;
+            }
+            configValue = getConfigValue("flags.controller.client.id", "FLAGS_CONTROLLER_CLIENT_ID");
+            if (configValue != null) {
+                flagsClientId = configValue;
+            }
+            configValue = getConfigValue("flags.controller.cache.seconds.timeout", "FLAGS_CONTROLLER_CACHE_SECONDS_TIMEOUT");
+            if (configValue != null) {
+                flagsCacheSecondsTimeout = Integer.parseInt(configValue);
+            }
+            configValue = getConfigValue("flags.controller.verbose.error.log", "FLAGS_CONTROLLER_VERBOSE_ERROR_LOG");
+            if (configValue != null) {
+                verboseErrorLog = Boolean.parseBoolean(configValue);
+            }
+            configValue = getConfigValue("flags_controller.send.data.pulse", "FLAGS_CONTROLLER_SEND_DATA_PULSE");
+            if (configValue != null) {
+                sendDataPulse = Boolean.parseBoolean(configValue);
+            }
+            if ( flagsClientId != "" &&  flagsControllerEndpoint != "" && flagsControllerAccessToken != "" && flagsContextKey != "") {
+                logger.info("SDK Config values loaded OK");
+            }
+            else {
+                logger.error("FlagTool Class loading SDK values");
+            }
             client = new LibertyClient(
                     logger,
-            		flagsClientId,
-            		flagsControllerEndpoint,
-            		flagsControllerAccessToken, 
-            		flagsContextKey, 
-            		flagsCacheSecondsTimeout,
+                    flagsClientId,
+                    flagsControllerEndpoint,
+                    flagsControllerAccessToken, 
+                    flagsContextKey, 
+                    flagsCacheSecondsTimeout,
                     verboseErrorLog,
                     sendDataPulse,
-            		defaultFlagsValues
-            );
+                    defaultFlagsValues
+            );            
             
         } catch (IOException e) {
             logger.error("IOException Creating Flag Tool Client: "+e.getMessage());
@@ -82,5 +108,22 @@ public class FlagTool {
             logger.error("GeneralException Creating Flag Tool Client: "+e.getMessage());
             e.printStackTrace();
         }        
+    }
+
+    /**
+     * Resolves a configuration value: uses the environment variable when set,
+     * otherwise falls back to the application.properties value. Returns null
+     * when neither source provides a value.
+     */
+    private static String getConfigValue(String propertyName, String envName) {
+        String propertyValue = flagsControllerProperties.getProperty(propertyName);
+        if (propertyValue != null && !propertyValue.trim().isEmpty()) {
+            return propertyValue;
+        }
+        String envValue = System.getenv(envName);
+        if (envValue != null && !envValue.trim().isEmpty()) {
+            return envValue;
+        }
+        return null;
     }
 }
